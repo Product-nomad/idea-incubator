@@ -4,7 +4,7 @@
 Telegram bot for capturing ideas (text, optionally dictated via phone keyboard mic), running them through fixed clarifying questions, generating a Claude-powered 7-dimension assessment, and auto-committing the markdown to a private GitHub repo.
 
 ## Status
-v0.3 running on Haiku. Two-repo architecture: source public, ideas private.
+v0.4 running on Haiku. YAML frontmatter, status lifecycle, /note + /status commands, auto-regenerated README index.
 
 ## What's done
 - Project layout: `bot.py`, `requirements.txt`, `.env.example`, `.gitignore`, `README.md`, `idea-bot.service.example`, `ideas/`.
@@ -38,3 +38,7 @@ v0.3 running on Haiku. Two-repo architecture: source public, ideas private.
 - **System systemd unit** (not user) to match `claude-agent.service`.
 - **No `incubator_config.json`** with token-on-disk — env vars only.
 - **Mom Test lens, not scoring rubric** for the assessment. The reference methodology argues against self-rating dimensions like Market Size or Founder-Market Fit from the armchair; evidence quality is what the bot grades instead.
+- **YAML frontmatter on every idea file** — `title`, `submitted`, `by`, `status`, `verdict`, `niche`, `tags`. Drives portability to any markdown tool (Obsidian, Logseq, scripts) and is what `/list`, `/status`, `/note`, and the auto-generated index parse.
+- **Status is a string, not a state machine.** Allowed values: `inbox`, `discovery`, `smoke-test`, `mvp`, `killed`. Move freely.
+- **Auto-generated `README.md` in the ideas repo** — regenerated on every `/new` and `/status`. Gives a one-page pipeline view without GitHub-UI dependency.
+- **Claude assessment now returns structured JSON** (`verdict`, `tags`, `critique_markdown`) so frontmatter can be populated unambiguously.
