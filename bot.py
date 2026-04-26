@@ -228,7 +228,15 @@ async def got_magic_wand(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     submitted_by = update.effective_user.first_name or "Unknown"
     md_path = save_markdown(context.user_data, critique_md, submitted_by)
     commit_status = git_commit_and_push(md_path)
-    await update.message.reply_text(f"Saved as {md_path.name}\n{commit_status}")
+    parts = [f"Saved as `{md_path.name}`", commit_status]
+    url = web_url_for(md_path)
+    if url:
+        parts.append(url)
+    await update.message.reply_text(
+        "\n".join(parts),
+        parse_mode="Markdown",
+        disable_web_page_preview=True,
+    )
     return ConversationHandler.END
 
 
@@ -307,6 +315,23 @@ def save_markdown(data: dict, critique_md: str, submitted_by: str) -> Path:
     path.write_text(md)
     logger.info("Saved idea to %s", path.name)
     return path
+
+
+def web_url_for(md_path: Path) -> str | None:
+    """Best-effort GitHub blob URL for a file in IDEAS_DIR. Returns None if remote isn't GitHub."""
+    try:
+        result = subprocess.run(
+            ["git", "remote", "get-url", "origin"],
+            cwd=IDEAS_DIR, check=True, capture_output=True, text=True, timeout=5,
+        )
+    except subprocess.SubprocessError:
+        return None
+    remote = result.stdout.strip()
+    m = re.match(r"git@github\.com:(.+?)(?:\.git)?$", remote) \
+        or re.match(r"https://github\.com/(.+?)(?:\.git)?$", remote)
+    if not m:
+        return None
+    return f"https://github.com/{m.group(1)}/blob/main/{md_path.name}"
 
 
 def git_commit_and_push(md_path: Path) -> str:
