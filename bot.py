@@ -175,6 +175,66 @@ def _md_cell(s: str) -> str:
     return str(s).replace("|", "\\|").replace("\n", " ").strip() or "—"
 
 
+def _short_label(s: str, n: int = 24) -> str:
+    s = (s or "").strip()
+    return (s[:n - 1] + "…") if len(s) > n else s
+
+
+def _mermaid_safe(s: str) -> str:
+    """Escape a label for use inside a Mermaid node. Quote it and strip
+    inner double-quotes — Mermaid is fragile around brackets, parens, etc."""
+    return s.replace('"', "'").replace("[", "(").replace("]", ")")
+
+
+def _mermaid_status_pie(items: list[dict]) -> str:
+    """Pie chart: idea count by status. Skipped if all ideas share a status
+    or there are zero ideas."""
+    counts: dict[str, int] = {}
+    for it in items:
+        counts[it["status"]] = counts.get(it["status"], 0) + 1
+    if not counts:
+        return ""
+    lines = ["```mermaid", 'pie showData title Ideas by status']
+    # Order canonically so the chart is stable across regenerations
+    canonical = ["inbox", "discovery", "smoke-test", "mvp", "killed"]
+    seen = set()
+    for s in canonical:
+        if s in counts:
+            lines.append(f'  "{s}" : {counts[s]}')
+            seen.add(s)
+    for s, n in counts.items():
+        if s not in seen:
+            lines.append(f'  "{s}" : {n}')
+    lines.append("```")
+    return "\n".join(lines)
+
+
+def _mermaid_tag_graph(items: list[dict]) -> str:
+    """Bipartite graph: tags ←→ ideas. Useful for spotting niche overlaps
+    (ideas linked to the same tag cluster). Skipped if no tagged ideas."""
+    tagged = [it for it in items if it.get("tags")]
+    if not tagged:
+        return ""
+    lines = ["```mermaid", "graph LR"]
+    # Tag nodes (rendered as parallelograms)
+    seen_tags: set[str] = set()
+    for it in tagged:
+        for tag in it["tags"]:
+            if tag not in seen_tags:
+                lines.append(f'  t_{re.sub(r"[^a-z0-9]", "_", tag.lower())}[/"#{tag}"/]')
+                seen_tags.add(tag)
+    # Idea nodes + edges to their tags
+    for i, it in enumerate(tagged, 1):
+        node = f"i{i}"
+        label = _mermaid_safe(_short_label(it["title"], 30))
+        lines.append(f'  {node}["{label}"]')
+        for tag in it["tags"]:
+            tag_id = "t_" + re.sub(r"[^a-z0-9]", "_", tag.lower())
+            lines.append(f"  {tag_id} --- {node}")
+    lines.append("```")
+    return "\n".join(lines)
+
+
 def regenerate_index() -> Path:
     items = list_ideas()
     lines = [
@@ -184,6 +244,21 @@ def regenerate_index() -> Path:
         "Bot source: [Product-nomad/idea-incubator](https://github.com/Product-nomad/idea-incubator).",
         "",
         f"_{len(items)} ideas. Last updated {datetime.now().strftime('%Y-%m-%d %H:%M')}._",
+        "",
+    ]
+
+    # Visual: pie chart of pipeline status. Renders inline on GitHub.
+    pie = _mermaid_status_pie(items)
+    if pie:
+        lines += ["## Pipeline at a glance", "", pie, ""]
+
+    # Visual: bipartite tag/idea graph. Surfaces niche overlaps.
+    tg = _mermaid_tag_graph(items)
+    if tg:
+        lines += ["## Tag clusters", "", tg, ""]
+
+    lines += [
+        "## All ideas",
         "",
         "| # | Title | Status | Verdict | Niche | Tags | Submitted |",
         "|---|---|---|---|---|---|---|",
@@ -204,6 +279,13 @@ def regenerate_index() -> Path:
         lines.append(
             f"| {i} | [{title}]({it['filename']}) | {status} | {verdict} | {niche} | {tags} | {date} |"
         )
+
+    lines += [
+        "",
+        "---",
+        "",
+        "**Tip:** clone this repo locally and open the directory in [Obsidian](https://obsidian.md) — you'll get a graph view, backlinks, and full-text search out of the box. The YAML frontmatter, flat-file layout, and `[[wikilinks]]` are all Obsidian-native.",
+    ]
 
     readme = IDEAS_DIR / "README.md"
     readme.write_text("\n".join(lines) + "\n")
