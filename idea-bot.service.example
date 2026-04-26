@@ -1,0 +1,16 @@
+[Unit]
+Description=Idea Incubator Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=vpc
+WorkingDirectory=/home/vpc/projects/idea-incubator
+EnvironmentFile=/home/vpc/projects/idea-incubator/.env
+ExecStart=/home/vpc/projects/idea-incubator/.venv/bin/python bot.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

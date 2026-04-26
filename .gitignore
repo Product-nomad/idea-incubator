@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+.envrc
+*.log
+# In production IDEAS_DIR points to a separate private repo, but if anyone runs
+# the bot with the default IDEAS_DIR they don't accidentally commit ideas here.
+ideas/*.md
