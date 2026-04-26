@@ -52,7 +52,18 @@ tags: [b2b, dev-tools, ai]
 ## Notes                 ← appended by /note
 ```
 
-The ideas repo also auto-maintains a `README.md` index — a single-page table of all ideas with status, verdict, niche, tags, and submitted date.
+The ideas repo also auto-maintains a `README.md` index — a single-page table of all ideas with status, verdict, niche, tags, and submitted date, plus inline **Mermaid charts** (status pie + tag-cluster graph) that GitHub renders directly.
+
+### Visual workflow: Obsidian as the desktop view
+
+The ideas repo is laid out as an [Obsidian](https://obsidian.md) vault by accident-of-design: flat files at root, YAML frontmatter on every page, `[[wikilinks]]` allowed in body. Clone it locally and point Obsidian at the directory — you get:
+
+- **Graph view** — every idea as a node, automatically clustered by tag/niche. The same data the bot's auto-index renders as a Mermaid diagram, but interactive and zoomable.
+- **Backlinks panel** — tap any idea to see what links to it (notes, related ideas).
+- **Mobile app** — Obsidian sync (or just a git client like Working Copy on iOS) gives you the vault on your phone, ideas-first.
+- **Full-text search** — already faster than `git grep` once the vault is indexed.
+
+No new tooling, no new format — just point a different viewer at the same files.
 
 ### Status lifecycle
 
