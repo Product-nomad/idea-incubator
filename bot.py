@@ -9,6 +9,7 @@ Question set rooted in customer-discovery practice and *The Mom Test*.
 """
 
 import asyncio
+import html
 import logging
 import os
 import re
@@ -228,13 +229,13 @@ async def got_magic_wand(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     submitted_by = update.effective_user.first_name or "Unknown"
     md_path = save_markdown(context.user_data, critique_md, submitted_by)
     commit_status = git_commit_and_push(md_path)
-    parts = [f"Saved as `{md_path.name}`", commit_status]
+    parts = [f"Saved as <code>{html.escape(md_path.name)}</code>", html.escape(commit_status)]
     url = web_url_for(md_path)
     if url:
         parts.append(url)
     await update.message.reply_text(
         "\n".join(parts),
-        parse_mode="Markdown",
+        parse_mode="HTML",
         disable_web_page_preview=True,
     )
     return ConversationHandler.END
