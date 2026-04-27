@@ -101,6 +101,28 @@ sudo systemctl enable --now idea-bot
 sudo journalctl -u idea-bot -f
 ```
 
+## Sharing the bot with collaborators
+
+The bot is designed for a single user by default — that's why `AUTHORIZED_USERS` is an allowlist of Telegram numeric IDs. To share it with one or more collaborators (e.g. a co-founder, a friend, a small team), you need to configure both **the bot side** and **Telegram itself**:
+
+1. **On the Telegram side** (BotFather) — open a chat with [@BotFather](https://t.me/botfather) and run:
+   - `/setprivacy` → choose your bot → **Disable**. This lets the bot read group messages instead of only commands directed at it. Required if you want the bot to participate in a shared group.
+   - `/setjoingroups` → choose your bot → **Enable**. Lets the bot be added to groups in the first place.
+2. **Create a Telegram group** with you, your collaborator(s), and the bot. Add the bot as a regular member; promoting to admin is not required for the current command set.
+3. **Collect each collaborator's numeric Telegram ID** — they each DM [@userinfobot](https://t.me/userinfobot) and copy the number it returns.
+4. **Add those IDs to `AUTHORIZED_USERS`** in `.env`, comma-separated:
+   ```
+   AUTHORIZED_USERS=11111111,22222222,33333333
+   ```
+5. **Restart the bot** so it re-reads the env file:
+   ```bash
+   sudo systemctl restart idea-bot
+   ```
+
+After restart, every authorised user can use `/new`, `/list`, `/status`, and `/note` — either in the shared group or in their own DM with the bot. Each idea is recorded with the submitter's name, so multi-user provenance is preserved in the markdown frontmatter.
+
+> **Privacy note:** in a shared group, every authorised user can see every idea in the private ideas repo (because they're all collaborators on it via GitHub). If you want strict per-user idea isolation, that's a different architecture — open an issue.
+
 ## Why this question set?
 
 The reference methodology argues that ideas can't be self-rated from the armchair — Problem Acuity, Market Size, etc. are *discovered* through 5-8 customer Discovery Calls. So:
