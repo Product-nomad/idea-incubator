@@ -1,6 +1,6 @@
 # Idea Incubator
 
-Telegram bot that captures startup ideas via a 6-question Discovery Call flow, then uses Claude to produce a Mom-Test-style critique focused on **evidence quality** (not idea promise). Each idea becomes a markdown file with YAML frontmatter, auto-committed and pushed to a separate **private** ideas repo.
+Telegram bot that captures startup ideas via a 6-questions, then uses Claude to produce a Mom-Test-style critique focused on **evidence quality** (not idea promise). Each idea becomes a markdown file with YAML frontmatter, auto-committed and pushed to a separate **private** ideas repo.
 
 This repo holds the bot source. Ideas themselves live in a separate private repo pointed at via the `IDEAS_DIR` env var (e.g. `Product-nomad/idea-incubator-ideas`).
 
