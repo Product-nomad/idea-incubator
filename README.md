@@ -143,3 +143,7 @@ The "exportable anywhere" goal drives the design:
 - **Auto-generated README index** gives a one-page pipeline view without depending on GitHub's UI.
 - **Status as a frontmatter string** rather than a folder or branch — moves freely, no rigid state machine.
 - **Notes appended in-file** rather than across separate documents — one idea, one file, full history.
+
+---
+
+Built by [Simon Newton](https://incubatelabs.ai/about/) at [Incubate Labs](https://incubatelabs.ai).
